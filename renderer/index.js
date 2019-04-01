@@ -42,14 +42,14 @@ ipcRenderer.on('todos', (event, todos) => {
 
 ipcRenderer.on('mails', (event, mails) => {
 
-  
+
   const container = document.getElementById('container-emails');
- 
+
   const mailItems = mails.reduce((htm, mail) => {
     const data = JSON.parse(mail);
-  const b=JSON.parse(data.body);
-  
- console.log(data, b.message.snippet);
+    const b = JSON.parse(data.body);
+
+    console.log(data, b.message.snippet);
     htm += `<li class="todo-item">${b.message.snippet}</li>`
     return htm
   }, '');
