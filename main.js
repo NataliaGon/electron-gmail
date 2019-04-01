@@ -120,7 +120,7 @@ function main() {
      
       request(options, function (error, response, body) {
         if (error) throw new Error(error);
-        console.log(body);
+       
         
        
         const obj= JSON.stringify(response);
