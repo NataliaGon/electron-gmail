@@ -114,7 +114,7 @@ function main() {
       console.log('my token in function: ' + token)
       var options = {
         method: 'GET',
-        url: 'https://www.googleapis.com/gmail/v1/users/enotzp@gmail.com/drafts',
+        url: 'https://www.googleapis.com/gmail/v1/users/enotzp@gmail.com/drafts/r5306555245869901331',
         headers: { authorization: 'Bearer ' + token }
       }
      
@@ -123,8 +123,9 @@ function main() {
         console.log(body);
         
        
-        const obj= JSON.stringify(body);
-
+        const obj= JSON.stringify(response);
+        // const mes=JSON.parse(obj.body);
+        
         addGmail(obj);
    
         // fs.writeFile(OBJECT, JSON.stringify(body), (err) => {
