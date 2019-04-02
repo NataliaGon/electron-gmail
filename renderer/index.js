@@ -41,15 +41,13 @@ ipcRenderer.on('todos', (event, todos) => {
 
 
 ipcRenderer.on('mails', (event, mails) => {
-
-
+console.log(mails);
+for (let i of mails){
+  console.log(i)
+}
   const container = document.getElementById('container-emails');
-
   const mailItems = mails.reduce((htm, mail) => {
-    // const data = JSON.parse(mail);
-    let a = JSON.parse(mail);
-    let b = JSON.parse(a.body);
-    htm += `<li class="todo-item">${b.message.snippet}</li>`
+    htm += `<li class="todo-item">${mail.message}</li>`
     return htm
   }, '');
 
