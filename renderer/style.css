@@ -17,3 +17,11 @@ body {
 .todo-item:hover {
   background: #d8d8d8
 }
+.email{
+  list-style-type: none;
+  border-bottom: 1px solid grey;
+  padding: 15px;
+  font-size: 16px;
+}
+
+

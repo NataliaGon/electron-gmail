@@ -47,7 +47,7 @@ for (let i of mails){
 }
   const container = document.getElementById('container-emails');
   const mailItems = mails.reduce((htm, mail) => {
-    htm += `<li class="todo-item">${mail.message}</li>`
+    htm += `<li class="email">${mail.message}</li>`
     return htm
   }, '');
 

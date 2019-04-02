@@ -103,7 +103,6 @@ function main() {
     }
     request(options, function (error, response, body) {
       if (error) throw new Error(error);
-
       fs.writeFile(OBJECT, JSON.stringify(response), (err) => {
         if (err) return console.error(err);
       });
@@ -115,12 +114,9 @@ function main() {
     fs.readFile(OBJECT, (err, data) => {
       if (err) return console.error(err);
       const obj = JSON.parse(data);
-      console.log(obj.body);
       const body = JSON.parse(obj.body);
       const drafts = body.drafts
-      console.log(drafts);
       for (let i of drafts) {
-        console.log(i.id);
         var options = {
           method: 'GET',
           url: 'https://www.googleapis.com/gmail/v1/users/enotzp@gmail.com/drafts/' + i.id,
@@ -131,21 +127,16 @@ function main() {
           const obj = JSON.stringify(response);
           let a = JSON.parse(obj);
           let b = JSON.parse(a.body);
+          console.log(a);
+          console.log(b);
           let mailSave = { id: b.message.id, message: b.message.snippet }
           mailData.addMail(mailSave);
           if(mailData.mails.length == drafts.length)
           mainWindow.send('mails', mailData.mails);
-
         });
-      }
-     
+      }  
     });
-
   }
-  // function addGmail(obj) {
-  //   const updatedMails = mailData.addMail(obj).mails;
-  //   mainWindow.send('mails', updatedMails);
-  // }
 }
 
 
