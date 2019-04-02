@@ -1,14 +1,10 @@
 'use strict'
 
-var request = require("request");
+const request = require("request");
 const fs = require('fs');
 const OBJECT = 'obj.json';
-
-
-
 const path = require('path')
 const { app, ipcMain } = require('electron')
-
 const Window = require('./Window')
 const DataStore = require('./DataStore')
 const MailStore = require('./mailStore')
@@ -66,28 +62,21 @@ function main() {
 
     mainWindow.send('todos', updatedTodos)
   })
-
   // delete-todo from todo list window
   ipcMain.on('delete-todo', (event, todo) => {
     const updatedTodos = todosData.deleteTodo(todo).todos
-
     mainWindow.send('todos', updatedTodos)
   })
 
   ipcMain.on('go-to-gmail', () => {
-
-    fs.readFile('client_secret.json', (err, content) => {
-      
+    fs.readFile('client_secret.json', (err, content) => {     
       if (err) return console.log('Error loading client secret file:', err);
       // Authorize a client with credentials, then call the Gmail API.
-      authorize(JSON.parse(content));
+      authorize(JSON.parse(content),  getDraftsId);
     });
   })
-  
-    function authorize(credentials) {
-    
+    function authorize(credentials, callback) {
       const { client_secret, client_id } = credentials.web;
-
       let newToken = {
         method: 'POST',
         url: 'https://www.googleapis.com/oauth2/v4/token',
@@ -103,47 +92,52 @@ function main() {
       request(newToken, function (error, response, body) {
         if (error) throw new Error(error);
         console.log(error);
-        console.log('my token: ' + body.access_token);
         body.access_token;
-        getDrafts(body.access_token);
+        callback(body.access_token);
       })
     }
-  
-  
-    function getDrafts(token) {
-      console.log('my token in function: ' + token)
+    function getDraftsId(token) {
       var options = {
         method: 'GET',
-        url: 'https://www.googleapis.com/gmail/v1/users/enotzp@gmail.com/drafts/r5306555245869901331',
+        url: 'https://www.googleapis.com/gmail/v1/users/enotzp@gmail.com/drafts',
         headers: { authorization: 'Bearer ' + token }
       }
-     
       request(options, function (error, response, body) {
         if (error) throw new Error(error);
-       
-        
-       
-        const obj= JSON.stringify(response);
-        // const mes=JSON.parse(obj.body);
-        
-        addGmail(obj);
-   
-        // fs.writeFile(OBJECT, JSON.stringify(body), (err) => {
-        //   if (err) return console.error(err);
-        // });
   
+        fs.writeFile(OBJECT, JSON.stringify(response), (err) => {
+          if (err) return console.error(err);
+          console.log('Object stored to', OBJECT);
+        });
+        getDrafts();
       });
     }
-
+    function getDrafts() {
+      fs.readFile(OBJECT,  (err, data) => {
+        if (err) return console.error(err);
+        const obj = JSON.parse(data);
+        const body= JSON.parse(obj.body); 
+        console.log(body.drafts);
+        for ( let i of body.drafts){
+          console.log(i.id);
+        }
+      });
+      // var options = {
+      //   method: 'GET',
+      //   url: 'https://www.googleapis.com/gmail/v1/users/enotzp@gmail.com/drafts/r5306555245869901331',
+      //   headers: { authorization: 'Bearer ' + token }
+      // }
+      // request(options, function (error, response, body) {
+      //   if (error) throw new Error(error);
+      //   const obj= JSON.stringify(response);
+      //   addGmail(obj);
+      // });
+    }
    function addGmail(obj){
-    const updatedMails = mailData.addMail(obj).mails;
-     
+    const updatedMails = mailData.addMail(obj).mails;  
     mainWindow.send('mails', updatedMails);
    }
-
-
   }
-
 
 
 app.on('ready', main)
