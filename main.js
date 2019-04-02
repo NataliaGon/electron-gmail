@@ -91,7 +91,6 @@ function main() {
       };
       request(newToken, function (error, response, body) {
         if (error) throw new Error(error);
-        console.log(error);
         body.access_token;
         callback(body.access_token);
       })
@@ -104,34 +103,40 @@ function main() {
       }
       request(options, function (error, response, body) {
         if (error) throw new Error(error);
-  
+
         fs.writeFile(OBJECT, JSON.stringify(response), (err) => {
           if (err) return console.error(err);
-          console.log('Object stored to', OBJECT);
         });
-        getDrafts();
+        getDrafts(token);
       });
     }
-    function getDrafts() {
+    function getDrafts(token) {
+      mailData.cleanMails();
       fs.readFile(OBJECT,  (err, data) => {
         if (err) return console.error(err);
+ 
         const obj = JSON.parse(data);
-        const body= JSON.parse(obj.body); 
-        console.log(body.drafts);
-        for ( let i of body.drafts){
+        console.log(obj.body);
+        
+        const body = JSON.parse(obj.body);
+        const drafts= body.drafts
+        console.log(drafts);
+        for ( let i of drafts){
           console.log(i.id);
+          var options = {
+            method: 'GET',
+            url: 'https://www.googleapis.com/gmail/v1/users/enotzp@gmail.com/drafts/'+i.id,
+            headers: { authorization: 'Bearer ' + token }
+          }
+          request(options, function (error, response, body) {
+            if (error) throw new Error(error);  
+            console.log(response);
+            const obj= JSON.stringify(response);
+            addGmail(obj);
+          });
         }
       });
-      // var options = {
-      //   method: 'GET',
-      //   url: 'https://www.googleapis.com/gmail/v1/users/enotzp@gmail.com/drafts/r5306555245869901331',
-      //   headers: { authorization: 'Bearer ' + token }
-      // }
-      // request(options, function (error, response, body) {
-      //   if (error) throw new Error(error);
-      //   const obj= JSON.stringify(response);
-      //   addGmail(obj);
-      // });
+  
     }
    function addGmail(obj){
     const updatedMails = mailData.addMail(obj).mails;  

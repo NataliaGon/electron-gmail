@@ -24,8 +24,11 @@ class MailStore extends Store {
         return this
       }
     addMail(mail) {
-        this.mails = [mail]
+        this.mails = [...this.mails, mail]
         return this.saveMails()
+    }
+    cleanMails(){
+      this.mails=[];
     }
 }
 
