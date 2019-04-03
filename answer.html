@@ -8,6 +8,16 @@
 </head>
 <body>
     Move back to app 
-    <script src="code.js"></script>
+    <script>
+        console.log(window.location.href)
+
+        var url = document.createElement('a');
+url.href = window.location.href
+ 
+console.log(url.hostname);
+console.log(window.location.href.search('code'));
+console.log(window.location.href.search('&'));
+console.log(window.location.href.slice(28,117));
+  </script>
 </body>
 </html>
