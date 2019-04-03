@@ -5,13 +5,13 @@ const fs = require('fs');
 const OBJECT = 'obj.json';
 const path = require('path')
 const { app, ipcMain } = require('electron')
-const  win = require('window');
+const win = require('window');
 const Window = require('./Window')
 const DataStore = require('./DataStore')
 const MailStore = require('./mailStore')
 var http = require('http');
 var url = require('url');
-const opn = require ('opn');
+const opn = require('opn');
 
 
 
@@ -61,43 +61,78 @@ function main() {
       })
     }
   })
-// let autor;
-//   ipcMain.on('add-autor', () => {
-//     // if addTodoWin does not already exist
-//     if (!autor) {
-//       // create a new add todo window
-//       autor= new Window({
-//         file: path.join('renderer', ''),
-//         width: 400,
-//         height: 400,
-//         // close with the main window
-//         parent: mainWindow
-//       })
-//       autor.loadURL('https://accounts.google.com/o/oauth2/v2/auth?access_type=offline&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile%20https%3A%2F%2Fmail.google.com%2F%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcontacts.readonly%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcalendar&response_type=code&client_id=9966615901-gi42os2oobnhclrep4qo3nk2d1ng7hmu.apps.googleusercontent.com&redirect_uri=http%3A%2F%2Flocalhost%3A3000')
-//       // cleanup
-//       autor.on('closed', () => {
-//         autor = null
-//       })
-//     }
-//     autor.webContents.openDevTools()
-//   })
- 
+  // let autor;
+  //   ipcMain.on('add-autor', () => {
+  //     // if addTodoWin does not already exist
+  //     if (!autor) {
+  //       // create a new add todo window
+  //       autor= new Window({
+  //         file: path.join('renderer', ''),
+  //         width: 400,
+  //         height: 400,
+  //         // close with the main window
+  //         parent: mainWindow
+  //       })
+  //       autor.loadURL('https://accounts.google.com/o/oauth2/v2/auth?access_type=offline&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile%20https%3A%2F%2Fmail.google.com%2F%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcontacts.readonly%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcalendar&response_type=code&client_id=9966615901-gi42os2oobnhclrep4qo3nk2d1ng7hmu.apps.googleusercontent.com&redirect_uri=http%3A%2F%2Flocalhost%3A3000')
+  //       // cleanup
+  //       autor.on('closed', () => {
+  //         autor = null
+  //       })
+  //     }
+  //     autor.webContents.openDevTools()
+  //   })
 
 
 
-function start() {
-  http.createServer(function(request, response) {
-    response.writeHead(200, {"Content-Type": "text/plain"});
-    response.write("Hello World");
-    response.end();
-  }).listen(8200);
-  opn('http://localhost:8200/')
-}
 
-ipcMain.on('add-autor', () => {
-start()
-})
+  function start() {
+    var port = process.env.PORT || 3000;
+    fs.readFile('./answer.html', function (err, html) {
+      if (err) {
+        throw err;
+      }
+
+      http.createServer((request, response) => {
+        response.writeHead(200, { "Content-Type": "text/plain" });
+        response.write(html);
+        response.end();
+
+      }).listen(port);
+    })
   
+}
+  ipcMain.on('add-autor', () => {
+    opn('https://accounts.google.com/o/oauth2/v2/auth?access_type=offline&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile%20https%3A%2F%2Fmail.google.com%2F%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcontacts.readonly%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcalendar&response_type=code&client_id=9966615901-gi42os2oobnhclrep4qo3nk2d1ng7hmu.apps.googleusercontent.com&redirect_uri=http%3A%2F%2Flocalhost%3A3000')
+    start()
+    //   console.log('start');
+    //   fs.readFile('client_secret.json', (err, content) => {
+    //     if (err) return console.log('Error loading client secret file:', err);
+    //     // Authorize a client with credentials, then call the Gmail API.
+    //     getCode(JSON.parse(content));
+    //   });
+
+    // function getCode(credentials) {
+    //   const { client_secret, client_id } = credentials.web;
+    //   let code = {
+    //     method: 'GET',
+    //     url: 'https://accounts.google.com/o/oauth2/v2/auth?access_type=offline&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile%20https%3A%2F%2Fmail.google.com%2F%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcontacts.readonly%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcalendar&response_type=code&client_id=9966615901-gi42os2oobnhclrep4qo3nk2d1ng7hmu.apps.googleusercontent.com&redirect_uri=http%3A%2F%2Flocalhost%3A3000',
+    //     headers: { 'content-type': 'application/json' },
+    //     body: {  
+    //       client_id: client_id,
+    //       response_type:'code',
+    //       client_secret: client_secret,
+    //       access_type: 'offline',
+    //       scope: 'https://www.googleapis.com/auth/userinfo.email'
+    //     },
+    //     json: true
+    //   };
+    //   request(code, function (error, response, body) {
+    //     if (error) throw new Error(error);
+    //     console.log(response,);
+    //   })
+    // }
+  })
+
   // add-todo from add todo window
   ipcMain.on('add-todo', (event, todo) => {
     const updatedTodos = todosData.addTodo(todo).todos
@@ -172,10 +207,10 @@ start()
           console.log(b);
           let mailSave = { id: b.message.id, message: b.message.snippet }
           mailData.addMail(mailSave);
-          if(mailData.mails.length == drafts.length)
-          mainWindow.send('mails', mailData.mails);
+          if (mailData.mails.length == drafts.length)
+            mainWindow.send('mails', mailData.mails);
         });
-      }  
+      }
     });
   }
 }
