@@ -1,13 +1,19 @@
 'use strict'
 
-const request = require("request");
+const request = require('request');
 const fs = require('fs');
 const OBJECT = 'obj.json';
 const path = require('path')
 const { app, ipcMain } = require('electron')
+const  win = require('window');
 const Window = require('./Window')
 const DataStore = require('./DataStore')
 const MailStore = require('./mailStore')
+var http = require('http');
+var url = require('url');
+const opn = require ('opn');
+
+
 
 require('electron-reload')(__dirname)
 
@@ -55,11 +61,46 @@ function main() {
       })
     }
   })
+// let autor;
+//   ipcMain.on('add-autor', () => {
+//     // if addTodoWin does not already exist
+//     if (!autor) {
+//       // create a new add todo window
+//       autor= new Window({
+//         file: path.join('renderer', ''),
+//         width: 400,
+//         height: 400,
+//         // close with the main window
+//         parent: mainWindow
+//       })
+//       autor.loadURL('https://accounts.google.com/o/oauth2/v2/auth?access_type=offline&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile%20https%3A%2F%2Fmail.google.com%2F%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcontacts.readonly%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcalendar&response_type=code&client_id=9966615901-gi42os2oobnhclrep4qo3nk2d1ng7hmu.apps.googleusercontent.com&redirect_uri=http%3A%2F%2Flocalhost%3A3000')
+//       // cleanup
+//       autor.on('closed', () => {
+//         autor = null
+//       })
+//     }
+//     autor.webContents.openDevTools()
+//   })
+ 
 
+
+
+function start() {
+  http.createServer(function(request, response) {
+    response.writeHead(200, {"Content-Type": "text/plain"});
+    response.write("Hello World");
+    response.end();
+  }).listen(8200);
+  opn('http://localhost:8200/')
+}
+
+ipcMain.on('add-autor', () => {
+start()
+})
+  
   // add-todo from add todo window
   ipcMain.on('add-todo', (event, todo) => {
     const updatedTodos = todosData.addTodo(todo).todos
-
     mainWindow.send('todos', updatedTodos)
   })
   // delete-todo from todo list window

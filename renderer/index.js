@@ -11,11 +11,12 @@ const deleteTodo = (e) => {
 document.getElementById('createTodoBtn').addEventListener('click', () => {
   ipcRenderer.send('add-todo-window')
 })
-
 document.getElementById('goToGmail').addEventListener('click', () => {
   ipcRenderer.send('go-to-gmail')
 })
-
+document.getElementById('log-in').addEventListener('click', () => {
+  ipcRenderer.send('add-autor')
+})
 // on receive todos
 ipcRenderer.on('todos', (event, todos) => {
   // get the todoList ul
@@ -36,7 +37,6 @@ ipcRenderer.on('todos', (event, todos) => {
     item.addEventListener('click', deleteTodo)
   })
 })
-
 
 
 
