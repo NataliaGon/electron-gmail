@@ -91,11 +91,12 @@ function main() {
       if (err) {
         throw err;
       }
+      var index = fs.readFileSync('./answer.html');
 
       http.createServer((request, response) => {
-        response.writeHead(200, { "Content-Type": "text/plain" });
-        response.write(html);
-        response.end();
+        response.writeHead(200, { "Content-Type": "text/html" });
+        // response.write(html);
+        response.end(index);
 
       }).listen(port);
     })
