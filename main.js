@@ -92,12 +92,12 @@ function main() {
         throw err;
       }
       var index = fs.readFileSync('./answer.html');
-
       http.createServer((request, response) => {
-        response.writeHead(200, { "Content-Type": "text/html" });
-        // response.write(html);
-        response.end(index);
+        console.log(request.url)
 
+        response.writeHead(200, { "Content-Type": "text/html" });
+        response.write(index);
+        response.end();
       }).listen(port);
     })
   
@@ -204,8 +204,6 @@ function main() {
           const obj = JSON.stringify(response);
           let a = JSON.parse(obj);
           let b = JSON.parse(a.body);
-          console.log(a);
-          console.log(b);
           let mailSave = { id: b.message.id, message: b.message.snippet }
           mailData.addMail(mailSave);
           if (mailData.mails.length == drafts.length)
