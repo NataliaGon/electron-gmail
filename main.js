@@ -2,13 +2,13 @@
 
 const request = require('request');
 const fs = require('fs');
-const OBJECT = 'obj.json';
 const path = require('path')
 const { app, ipcMain } = require('electron')
 const Window = require('./Window')
 const DataStore = require('./DataStore')
 const MailStore = require('./mailStore')
 const UserStore = require('./userStore')
+const InboxStore = require('./inboxStore')
 const http = require('http');
 const opn = require('opn');
 const { google } = require('googleapis');
@@ -22,14 +22,15 @@ require('electron-reload')(__dirname)
 const todosData = new DataStore({ name: 'Todos Main' });
 const mailData = new MailStore({ name: 'Mails Main' });
 const userData = new UserStore({ name: 'Users Main' });
-
+const inboxData = new InboxStore({ name: 'Inbox Main' });
 
 const TOKEN_PATH = 'token2.json';
 const GMAIL_CLIENT_ID = '9966615901-gi42os2oobnhclrep4qo3nk2d1ng7hmu.apps.googleusercontent.com';
 const CLIENT_SECRET = 'y_axlMCVd8tEox7IYnfr0mtL';
 const oAuth2Client = new google.auth.OAuth2(
   GMAIL_CLIENT_ID, CLIENT_SECRET, 'http://localhost:3000');
-
+const OBJECT = 'obj.json';
+const INBOX = 'inbox.json';
 
 function main() {
   // todo list window
@@ -94,12 +95,9 @@ function main() {
           // });
           // oAuth2Client.setCredentials(token);
           // Store the token to disk for later program executions
-          console.log(token.refresh_token)
+      
           userData.addUsers(token.refresh_token)
-          
-          console.log('this is:' + token.refresh_token)
-     
-          console.log(tokensArray)
+
           fs.writeFile(TOKEN_PATH, JSON.stringify(token), (err) => {
             if (err) return console.error(err);
             console.log('Token stored to', TOKEN_PATH);
@@ -131,13 +129,6 @@ function main() {
   })
 
   ipcMain.on('go-to-gmail', () => {
-    // fs.readFile('client_secret.json', (err, content) => {
-    //   if (err) return console.log('Error loading client secret file:', err);
-    // Authorize a client with credentials, then call the Gmail API.
-    // authorize(JSON.parse(content), getDraftsId);
-    // });
-    console.log(mailData.mails)
-    console.log(userData.users)
     let newToken = {
       method: 'POST',
       url: 'https://www.googleapis.com/oauth2/v4/token',
@@ -154,6 +145,26 @@ function main() {
       if (error) throw new Error(error);
       body.access_token;
       getDraftsId(body.access_token);
+    })
+  })
+
+  ipcMain.on('get-inbox', () => {
+    let newToken = {
+      method: 'POST',
+      url: 'https://www.googleapis.com/oauth2/v4/token',
+      headers: { 'content-type': 'application/json' },
+      body: {
+        grant_type: 'refresh_token',
+        client_id: GMAIL_CLIENT_ID,
+        client_secret: CLIENT_SECRET,
+        refresh_token: userData.users[0]
+      },
+      json: true
+    };
+    request(newToken, function (error, response, body) {
+      if (error) throw new Error(error);
+      body.access_token;
+      getInboxId(body.access_token);
     })
   })
   function authorize(credentials, callback) {
@@ -188,6 +199,53 @@ function main() {
         if (err) return console.error(err);
       });
       getDrafts(token);
+    });
+  }
+  function getInboxId(token) {
+    var options = {
+      method: 'GET',
+      url: 'https://www.googleapis.com/gmail/v1/users/natalia.g@morning.agency/messages',
+      headers: { authorization: 'Bearer ' + token }
+    }
+    request(options, function (error, response, body) {
+      if (error) throw new Error(error);
+      fs.writeFile(INBOX, JSON.stringify(response), (err) => {
+        if (err) return console.error(err);
+      });
+      getInbox(token);
+    });
+  }
+  function getInbox(token) {
+
+    inboxData.cleanMails();
+    fs.readFile(INBOX, (err, data) => {
+      if (err) return console.error(err);
+      const obj = JSON.parse(data);
+      const body = JSON.parse(obj.body);
+      const inbox = body.messages
+      for (let i of inbox) {
+        var options = {
+          method: 'GET',
+          url: 'https://www.googleapis.com/gmail/v1/users/natalia.g@morning.agency/messages/' + i.id,
+          headers: { authorization: 'Bearer ' + token }
+        }
+        request(options, function (error, response, body) {
+          if (error) throw new Error(error);
+          const obj = JSON.stringify(response);
+          let a = JSON.parse(obj);
+          let b = JSON.parse(a.body);
+          // console.log(JSON.parse(b.messages));
+          let inboxSave = { id: b.id, message: b.snippet }
+          console.log(inboxSave)
+          inboxData.addMail(inboxSave);
+          console.log(inboxData.mails.length);
+          console.log(inbox.length);
+          if (inboxData.mails.length == inbox.length){
+            console.log(inboxData.mails.length)
+            mainWindow.send('inbox', inboxData.mails);
+          }
+        });
+      }
     });
   }
   function getDrafts(token) {
