@@ -10,8 +10,8 @@ const Window = require('./Window')
 const DataStore = require('./DataStore')
 const MailStore = require('./mailStore')
 var http = require('http');
-var url = require('url');
 const opn = require('opn');
+
 
 
 
@@ -93,8 +93,10 @@ function main() {
       }
       var index = fs.readFileSync('./answer.html');
       http.createServer((request, response) => {
-        console.log(request.url)
-
+        const start = request.url.search('code') + 5
+        const end = request.url.search('&')
+        const code = request.url.slice(start, end)
+        console.log(code);
         response.writeHead(200, { "Content-Type": "text/html" });
         response.write(index);
         response.end();
