@@ -2,33 +2,32 @@
 
 const Store = require('electron-store');
 
-class MailStore extends Store {
+class UserStore extends Store {
     constructor(settings) {
         super(settings)
 
         // initialize with todos or empty array
 
-        this.mails = this.get('mails') || [] //new
+        this.users = this.get('users') || [] //new
     }
-    saveMails () {
+    saveUsers () {
         // save todos to JSON file
-        this.set('mails', this.mails)
+        this.set('users', this.users)
+    
         // returning 'this' allows method chaining
         return this
       }
-    getMails () {
+    getUsers () {
         // set object's todos to todos in JSON file
-        this.mails = this.get('mails') || []
+        this.users = this.get('users') || []
     
         return this
       }
-    addMail(mail) {
-        this.mails = [...this.mails, mail]
-        return this.saveMails()
+    addUsers(user) {
+        this.users = [...this.users, user]
+        return this.saveUsers()
     }
-    cleanMails(){
-      this.mails=[];
-    }
+  
 }
 
-module.exports = MailStore;
+module.exports = UserStore;

@@ -15,7 +15,7 @@ document.getElementById('goToGmail').addEventListener('click', () => {
   ipcRenderer.send('go-to-gmail')
 })
 document.getElementById('log-in').addEventListener('click', () => {
-  console.log('2')
+  event.preventDefault();
   ipcRenderer.send('add-autor')
   // console.log('e');
   // let a = window.location.href;
