@@ -12,6 +12,7 @@ const InboxStore = require('./inboxStore')
 const http = require('http');
 const opn = require('opn');
 const { google } = require('googleapis');
+var jwt = require('jsonwebtoken');
 
 
 
@@ -24,7 +25,7 @@ const mailData = new MailStore({ name: 'Mails Main' });
 const userData = new UserStore({ name: 'Users Main' });
 const inboxData = new InboxStore({ name: 'Inbox Main' });
 
-const TOKEN_PATH = 'token2.json';
+// const TOKEN_PATH = 'token2.json';
 const GMAIL_CLIENT_ID = '9966615901-gi42os2oobnhclrep4qo3nk2d1ng7hmu.apps.googleusercontent.com';
 const CLIENT_SECRET = 'y_axlMCVd8tEox7IYnfr0mtL';
 const oAuth2Client = new google.auth.OAuth2(
@@ -72,9 +73,6 @@ function main() {
     }
   })
 
-
-
-
   function start() {
     var port = process.env.PORT || 3000;
     fs.readFile('./answer.html', function (err, html) {
@@ -83,7 +81,7 @@ function main() {
       }
       var index = fs.readFileSync('./answer.html');
       http.createServer((request, response) => {
-        
+
         const start = request.url.search('code') + 5
         const end = request.url.search('&')
         const code = request.url.slice(start, end)
@@ -95,13 +93,33 @@ function main() {
           // });
           // oAuth2Client.setCredentials(token);
           // Store the token to disk for later program executions
-      
-          userData.addUsers(token.refresh_token)
+          // get the decoded payload ignoring signature, no secretOrPrivateKey needed
+         
+       
+          var decoded = jwt.decode(token.id_token, { complete: true });
+          console.log(decoded.payload.email);
+          const usersArray = userData.getUsers().users;
+          // let us = JSON.parse(usersArray);
+          // console.log(us)
+          let weHave = false
+          for ( let i of usersArray){
+            console.log(typeof(i), i)
+            if(i.email == decoded.payload.email) {
+             weHave=true
+             return
+            }
+          }
+          if(!weHave){
+          userData.addUsers(decoded.payload.email, token.refresh_token)
+          }else{
+            weHave=false
+          }
 
-          fs.writeFile(TOKEN_PATH, JSON.stringify(token), (err) => {
-            if (err) return console.error(err);
-            console.log('Token stored to', TOKEN_PATH);
-          });
+
+          // fs.writeFile(TOKEN_PATH, JSON.stringify(token), (err) => {
+          //   if (err) return console.error(err);
+          //   console.log('Token stored to', TOKEN_PATH);
+          // });
           // callback(oAuth2Client);
         });
         response.writeHead(200, { "Content-Type": "text/html" });
@@ -112,7 +130,6 @@ function main() {
 
   }
   ipcMain.on('add-autor', () => {
-
     opn('https://accounts.google.com/o/oauth2/v2/auth?access_type=offline&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile%20https%3A%2F%2Fmail.google.com%2F%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcontacts.readonly%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcalendar&response_type=code&client_id=9966615901-gi42os2oobnhclrep4qo3nk2d1ng7hmu.apps.googleusercontent.com&redirect_uri=http%3A%2F%2Flocalhost%3A3000')
     start();
   })
@@ -167,26 +184,26 @@ function main() {
       getInboxId(body.access_token);
     })
   })
-  function authorize(credentials, callback) {
-    const { client_secret, client_id } = credentials.web;
-    let newToken = {
-      method: 'POST',
-      url: 'https://www.googleapis.com/oauth2/v4/token',
-      headers: { 'content-type': 'application/json' },
-      body: {
-        grant_type: 'refresh_token',
-        client_id: client_id,
-        client_secret: client_secret,
-        refresh_token: '1/KsW2qFZxVNhE64M8HKq6p_29kOUJ3POPDxxpM6zCWdY'
-      },
-      json: true
-    };
-    request(newToken, function (error, response, body) {
-      if (error) throw new Error(error);
-      body.access_token;
-      callback(body.access_token);
-    })
-  }
+  // function authorize(credentials, callback) {
+  //   const { client_secret, client_id } = credentials.web;
+  //   let newToken = {
+  //     method: 'POST',
+  //     url: 'https://www.googleapis.com/oauth2/v4/token',
+  //     headers: { 'content-type': 'application/json' },
+  //     body: {
+  //       grant_type: 'refresh_token',
+  //       client_id: client_id,
+  //       client_secret: client_secret,
+  //       refresh_token: '1/KsW2qFZxVNhE64M8HKq6p_29kOUJ3POPDxxpM6zCWdY'
+  //     },
+  //     json: true
+  //   };
+  //   request(newToken, function (error, response, body) {
+  //     if (error) throw new Error(error);
+  //     body.access_token;
+  //     callback(body.access_token);
+  //   })
+  // }
   function getDraftsId(token) {
     var options = {
       method: 'GET',
@@ -236,12 +253,8 @@ function main() {
           let b = JSON.parse(a.body);
           // console.log(JSON.parse(b.messages));
           let inboxSave = { id: b.id, message: b.snippet }
-          console.log(inboxSave)
           inboxData.addMail(inboxSave);
-          console.log(inboxData.mails.length);
-          console.log(inbox.length);
-          if (inboxData.mails.length == inbox.length){
-            console.log(inboxData.mails.length)
+          if (inboxData.mails.length == inbox.length) {
             mainWindow.send('inbox', inboxData.mails);
           }
         });

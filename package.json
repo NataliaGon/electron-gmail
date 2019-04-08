@@ -21,6 +21,7 @@
     "electron-store": "^2.0.0",
     "googleapis": "^39.1.0",
     "hashchange": "^1.0.0",
+    "jsonwebtoken": "^8.5.1",
     "opn": "^6.0.0",
     "spectre.css": "^0.5.8",
     "window": "^4.2.6",
