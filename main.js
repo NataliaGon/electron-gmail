@@ -34,8 +34,15 @@ const OBJECT = 'obj.json';
 const INBOX = 'inbox.json';
 
 let activeUser={
-  token: userData.users[0].token,
-  email: userData.users[0].email
+  token:'',
+  email:''
+}
+if (userData.users) {
+  console.log(activeUser);
+  activeUser.token = userData.users[1].token;
+  activeUser.email=userData.users[1].email
+}else{
+  'no'
 }
 
 function main() {
@@ -98,26 +105,30 @@ function main() {
           // oAuth2Client.setCredentials(token);
           // Store the token to disk for later program executions
           // get the decoded payload ignoring signature, no secretOrPrivateKey needed
-         
-       
+
+          console.log(token);
           var decoded = jwt.decode(token.id_token, { complete: true });
           console.log(decoded.payload.email);
           const usersArray = userData.getUsers().users;
           // let us = JSON.parse(usersArray);
           // console.log(us)
           let weHave = false
-          for ( let i of usersArray){
-            if(i.email == decoded.payload.email) {
-             weHave=true
-             return
+          for (let i of usersArray) {
+            if (i.email == decoded.payload.email) {
+              weHave = true
+              activeUser.token = i.token;
+              activeUser.email = i.email;
+              return
             }
           }
-          if(!weHave){
-          userData.addUsers(decoded.payload.email, token.refresh_token)
-          }else{
-            weHave=false
+          if (!weHave) {
+            userData.addUsers(decoded.payload.email, token.refresh_token);
+            activeUser.token = token.refresh_token;
+            activeUser.email = decoded.payload.email;
+          } else {
+            weHave = false
           }
-
+          console.log(activeUser);
 
           // fs.writeFile(TOKEN_PATH, JSON.stringify(token), (err) => {
           //   if (err) return console.error(err);
@@ -149,6 +160,7 @@ function main() {
   })
 
   ipcMain.on('go-to-gmail', () => {
+
     let newToken = {
       method: 'POST',
       url: 'https://www.googleapis.com/oauth2/v4/token',
@@ -164,6 +176,7 @@ function main() {
     request(newToken, function (error, response, body) {
       if (error) throw new Error(error);
       body.access_token;
+      console.log(activeUser);
       getDraftsId(body.access_token);
     })
   })
@@ -210,9 +223,10 @@ function main() {
   function getDraftsId(token) {
     var options = {
       method: 'GET',
-      url: 'https://www.googleapis.com/gmail/v1/users/'+activeUser.email+'/drafts',
+      url: 'https://www.googleapis.com/gmail/v1/users/' + activeUser.email + '/drafts',
       headers: { authorization: 'Bearer ' + token }
     }
+    console.log(activeUser.email)
     request(options, function (error, response, body) {
       if (error) throw new Error(error);
       fs.writeFile(OBJECT, JSON.stringify(response), (err) => {
@@ -224,7 +238,7 @@ function main() {
   function getInboxId(token) {
     var options = {
       method: 'GET',
-      url: 'https://www.googleapis.com/gmail/v1/users/'+activeUser.email+'/messages',
+      url: 'https://www.googleapis.com/gmail/v1/users/'+ activeUser.email +'/messages',
       headers: { authorization: 'Bearer ' + token }
     }
     request(options, function (error, response, body) {
@@ -244,14 +258,16 @@ function main() {
       const body = JSON.parse(obj.body);
       const inbox = body.messages
       for (let i of inbox) {
+        console.log(i.id)
         var options = {
           method: 'GET',
-          url: 'https://www.googleapis.com/gmail/v1/users/natalia.g@morning.agency/messages/' + i.id,
+          url: 'https://www.googleapis.com/gmail/v1/users/' + activeUser.email + '/messages/' + i.id,
           headers: { authorization: 'Bearer ' + token }
         }
         request(options, function (error, response, body) {
           if (error) throw new Error(error);
           const obj = JSON.stringify(response);
+       
           let a = JSON.parse(obj);
           let b = JSON.parse(a.body);
           let inboxSave = { id: b.id, message: b.snippet }
@@ -271,14 +287,18 @@ function main() {
       const body = JSON.parse(obj.body);
       const drafts = body.drafts
       for (let i of drafts) {
+      
         var options = {
           method: 'GET',
-          url: 'https://www.googleapis.com/gmail/v1/users/natalia.g@morning.agency/drafts/' + i.id,
+          url: 'https://www.googleapis.com/gmail/v1/users/' + activeUser.email + '/drafts/' + i.id,
           headers: { authorization: 'Bearer ' + token }
         }
         request(options, function (error, response, body) {
           if (error) throw new Error(error);
+         
+          // console.log(response)
           const obj = JSON.stringify(response);
+          console.log(obj);
           let a = JSON.parse(obj);
           let b = JSON.parse(a.body);
           let mailSave = { id: b.message.id, message: b.message.snippet }
