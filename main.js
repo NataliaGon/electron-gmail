@@ -33,6 +33,11 @@ const oAuth2Client = new google.auth.OAuth2(
 const OBJECT = 'obj.json';
 const INBOX = 'inbox.json';
 
+let activeUser={
+  token: userData.users[0].token,
+  email: userData.users[0].email
+}
+
 function main() {
   // todo list window
   let mainWindow = new Window({
@@ -81,12 +86,11 @@ function main() {
       }
       var index = fs.readFileSync('./answer.html');
       http.createServer((request, response) => {
-
         const start = request.url.search('code') + 5
         const end = request.url.search('&')
         const code = request.url.slice(start, end)
         oAuth2Client.getToken(code, (err, token) => {
-          if (err) return console.error('Error retrieving access token', err);
+          // if (err) return console.error('Error retrieving access token', err);
           // const meResp = await fetch('https://www.googleapis.com/oauth2/v1/userinfo?alt=json', {
           //   method: 'GET',
           //   headers: { Authorization: `Bearer ${access_token}` },
@@ -103,7 +107,6 @@ function main() {
           // console.log(us)
           let weHave = false
           for ( let i of usersArray){
-            console.log(typeof(i), i)
             if(i.email == decoded.payload.email) {
              weHave=true
              return
@@ -154,7 +157,7 @@ function main() {
         grant_type: 'refresh_token',
         client_id: GMAIL_CLIENT_ID,
         client_secret: CLIENT_SECRET,
-        refresh_token: userData.users[0]
+        refresh_token: activeUser.token
       },
       json: true
     };
@@ -174,7 +177,7 @@ function main() {
         grant_type: 'refresh_token',
         client_id: GMAIL_CLIENT_ID,
         client_secret: CLIENT_SECRET,
-        refresh_token: userData.users[0]
+        refresh_token: activeUser.token
       },
       json: true
     };
@@ -207,7 +210,7 @@ function main() {
   function getDraftsId(token) {
     var options = {
       method: 'GET',
-      url: 'https://www.googleapis.com/gmail/v1/users/natalia.g@morning.agency/drafts',
+      url: 'https://www.googleapis.com/gmail/v1/users/'+activeUser.email+'/drafts',
       headers: { authorization: 'Bearer ' + token }
     }
     request(options, function (error, response, body) {
@@ -221,7 +224,7 @@ function main() {
   function getInboxId(token) {
     var options = {
       method: 'GET',
-      url: 'https://www.googleapis.com/gmail/v1/users/natalia.g@morning.agency/messages',
+      url: 'https://www.googleapis.com/gmail/v1/users/'+activeUser.email+'/messages',
       headers: { authorization: 'Bearer ' + token }
     }
     request(options, function (error, response, body) {
@@ -251,7 +254,6 @@ function main() {
           const obj = JSON.stringify(response);
           let a = JSON.parse(obj);
           let b = JSON.parse(a.body);
-          // console.log(JSON.parse(b.messages));
           let inboxSave = { id: b.id, message: b.snippet }
           inboxData.addMail(inboxSave);
           if (inboxData.mails.length == inbox.length) {
