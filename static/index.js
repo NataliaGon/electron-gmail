@@ -11,7 +11,7 @@ const deleteTodo = (e) => {
 document.getElementById('createTodoBtn').addEventListener('click', () => {
   ipcRenderer.send('add-todo-window')
 })
-document.getElementById('goToGmail').addEventListener('click', () => {
+document.getElementById('getDrafts').addEventListener('click', () => {
   ipcRenderer.send('go-to-gmail')
 })
 document.getElementById('getInbox').addEventListener('click', () => {
@@ -53,9 +53,7 @@ ipcRenderer.on('mails', (event, mails) => {
 
   container.innerHTML = mailItems;
 
-
 })
-
 
 ipcRenderer.on('inbox', (event, mails) => {
 
