@@ -22,7 +22,10 @@
     "googleapis": "^39.1.0",
     "hashchange": "^1.0.0",
     "jsonwebtoken": "^8.5.1",
+    "nodemon": "^1.18.11",
     "opn": "^6.0.0",
+    "passport": "^0.4.0",
+    "passport-google-oauth": "^2.0.0",
     "spectre.css": "^0.5.8",
     "window": "^4.2.6",
     "window-open": "0.0.2"

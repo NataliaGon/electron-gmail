@@ -38,8 +38,8 @@ let activeUser = {
   email: ''
 }
 if (userData.users) {
-  activeUser.token = userData.users[1].token;
-  activeUser.email = userData.users[1].email
+  activeUser.token = userData.users[0].token;
+  activeUser.email = userData.users[0].email
 } else {
   'no'
 }
@@ -47,7 +47,7 @@ if (userData.users) {
 function main() {
   // todo list window
   let mainWindow = new Window({
-    file: path.join('renderer', 'index.html')
+    file: path.join('static', 'index.html')
   })
   mainWindow.webContents.openDevTools()
   // add todo window
@@ -86,17 +86,19 @@ function main() {
 
   function start() {
     var port = process.env.PORT || 3000;
-    fs.readFile('./answer.html', function (err, html) {
+    fs.readFile('./static/answer.html', function (err, html) {
       if (err) {
         throw err;
       }
-      var index = fs.readFileSync('./answer.html');
+      var index = fs.readFileSync('./static/answer.html');
       http.createServer((request, response) => {
         const start = request.url.search('code') + 5
         const end = request.url.search('&')
         const code = request.url.slice(start, end)
+        console.log(code)
+
         oAuth2Client.getToken(code, (err, token) => {
-          // if (err) return console.error('Error retrieving access token', err);
+          if (err) return console.error('Error retrieving access token', err);
           // const meResp = await fetch('https://www.googleapis.com/oauth2/v1/userinfo?alt=json', {
           //   method: 'GET',
           //   headers: { Authorization: `Bearer ${access_token}` },
@@ -105,10 +107,8 @@ function main() {
           // Store the token to disk for later program executions
           // get the decoded payload ignoring signature, no secretOrPrivateKey needed
 
-          // console.log(token);
+          console.log(token);
           var decoded = jwt.decode(token.id_token, { complete: true });
-
-
           const usersArray = userData.getUsers().users;
           // let us = JSON.parse(usersArray);
           // console.log(us)
@@ -128,7 +128,7 @@ function main() {
           } else {
             weHave = false
           }
-          console.log(activeUser.token);
+
 
           // fs.writeFile(TOKEN_PATH, JSON.stringify(token), (err) => {
           //   if (err) return console.error(err);
@@ -176,7 +176,6 @@ function main() {
     request(newToken, function (error, response, body) {
       if (error) throw new Error(error);
       body.access_token;
-      console.log(activeUser);
       getDraftsId(body.access_token);
     })
   })
@@ -226,7 +225,7 @@ function main() {
       url: 'https://www.googleapis.com/gmail/v1/users/' + activeUser.email + '/drafts',
       headers: { authorization: 'Bearer ' + token }
     }
-    console.log(activeUser.email)
+
     request(options, function (error, response, body) {
       if (error) throw new Error(error);
       fs.writeFile(OBJECT, JSON.stringify(response), (err) => {
