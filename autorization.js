@@ -14,7 +14,7 @@ const SCOPES = ['https://www.googleapis.com/auth/userinfo.email', // email addre
 // The file token.json stores the user's access and refresh tokens, and is
 // created automatically when the authorization flow completes for the first
 // time.
-const TOKEN_PATH = 'token.json';
+const TOKEN_PATH = 'token1.json';
 
 // Load client secrets from a local file.
 fs.readFile('client_secret.json', (err, content) => {
@@ -54,7 +54,7 @@ function getNewToken(oAuth2Client, callback) {
         scope: SCOPES,
     });
 
-    console.log(callback);
+   console.log('yes')
 
     console.log('Authorize this app by visiting this url:', authUrl);
     const rl = readline.createInterface({
@@ -62,7 +62,7 @@ function getNewToken(oAuth2Client, callback) {
         output: process.stdout,
 
     });
-    console.log( code);
+ 
   
     rl.question('Enter the code from that page here: ', (code) => {
         rl.close();
