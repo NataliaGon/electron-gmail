@@ -37,10 +37,10 @@ let activeUser={
   token:'',
   email:''
 }
-if (userData.users) {
+if (userData.users[0]) {
   console.log(activeUser);
-  activeUser.token = userData.users[1].token;
-  activeUser.email=userData.users[1].email
+  activeUser.token = userData.users[0].token;
+  activeUser.email=userData.users[0].email
 }else{
   'no'
 }
